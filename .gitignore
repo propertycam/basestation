@@ -1,0 +1,4 @@
+# Specifies files and directories that git will ignore
+
+# PyCharm IDE config files
+.idea
