@@ -9,8 +9,10 @@ import os
 # Create TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+
 # Bind the socket to a port
-server_address = ('localhost', 50000)
+#server_address = ('localhost', 50000)
+server_address = ('', 50000)
 sock.bind(server_address)
 sock.listen()
 print('Propertycam basestation listening on %s port %s' % server_address)
