@@ -4,6 +4,9 @@ Basestation recieves photos captured by propertycam camera units.
 
 import socket
 import os
+from pymongo import MongoClient
+import datetime
+
 
 
 # Create TCP/IP socket
@@ -20,10 +23,20 @@ print('Propertycam basestation listening on %s port %s' % server_address)
 # Initialize snapshot number
 snapnum = 0
 
-# Create directory to store snaps
+# Set directory to store snaps
 snapdir = 'snaps'
-if not os.path.exists(snapdir):
-    os.mkdir(snapdir)
+fullsnapdir = '/home/damon/propertycam/basestation-ui/public/snaps'
+
+# Create directory to store snaps
+#snapdir = 'snaps'
+#if not os.path.exists(snapdir):
+#    os.mkdir(snapdir)
+
+# Connect to Meteor's Mongo Database
+mongo_client = MongoClient('mongodb://localhost:3001/meteor')
+db = mongo_client.meteor
+#dbs = mongo_client.database_names()
+#print(dbs)
 
 # Continuously accept and handle connections
 while True:
@@ -34,14 +47,16 @@ while True:
 
     # Create file to write snapshot to
     snapnum = snapnum + 1
-    file = open(snapdir + '/' + str(snapnum).zfill(5) + '.jpg', 'wb')
+    filename = str(snapnum).zfill(5) + '.jpg'
+    filepath = fullsnapdir + '/' + filename
+    file = open(filepath, 'wb')
 
     # Receive parts
     buffer_size = 1024
     buffer = connection.recv(buffer_size)
     partnum = 1
     while(buffer):
-        print('Recieved part ', partnum)
+        #print('Recieved part ', partnum)
         file.write(buffer)
         buffer = connection.recv(buffer_size)
         partnum = partnum + 1
@@ -50,3 +65,10 @@ while True:
     print("Done receiving")
     file.close()
     connection.close()
+
+    # Insert snap in Mongo db
+    filepath = snapdir + '/' + filename
+    snap = {"src" : filepath,
+            "createdAt": datetime.datetime.utcnow() }
+    snap_id = db.snaps.insert_one(snap)
+    print("Inserted snap id  " + str(snap_id))
