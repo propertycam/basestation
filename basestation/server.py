@@ -24,8 +24,7 @@ print('Propertycam basestation listening on %s port %s' % server_address)
 snapnum = 0
 
 # Set directory to store snaps
-snapdir = 'snaps'
-fullsnapdir = '/home/damon/propertycam/basestation-ui/public/snaps'
+webpublicdir = '/home/damon/propertycam/basestation-ui/public'
 
 # Create directory to store snaps
 #snapdir = 'snaps'
@@ -45,11 +44,28 @@ while True:
     connection, client_addr = sock.accept()
     print('Connection from ', client_addr)
 
+    # TODO: Get camera id (could use MAC address) and snap time from camera
+    cam_id = '001122334455'
+    snaptime = datetime.datetime.now()
+
+    # Create directory to store camera snaps
+    date = snaptime.strftime("%Y-%m-%d")
+    snapdir = 'snaps/' + cam_id + '/' + date
+    fullsnapdir = webpublicdir + '/' + snapdir
+    if not os.path.exists(fullsnapdir):
+        os.makedirs(fullsnapdir)
+
+    # Write camera snap to file
+    snapfile = snaptime.strftime("%H%M%S.%f") + '.jpg'
+    relative_path_to_snapfile = snapdir +'/' + snapfile
+    fullpathtosnapfile = fullsnapdir + '/' + snapfile
+    file = open(fullpathtosnapfile, 'wb')
+
     # Create file to write snapshot to
-    snapnum = snapnum + 1
-    filename = str(snapnum).zfill(5) + '.jpg'
-    filepath = fullsnapdir + '/' + filename
-    file = open(filepath, 'wb')
+#    snapnum = snapnum + 1
+#    filename = str(snapnum).zfill(5) + '.jpg'
+#    filepath = fullsnapdir + '/' + filename
+#    file = open(filepath, 'wb')
 
     # Receive parts
     buffer_size = 1024
@@ -67,8 +83,7 @@ while True:
     connection.close()
 
     # Insert snap in Mongo db
-    filepath = snapdir + '/' + filename
-    snap = {"src" : filepath,
-            "createdAt": datetime.datetime.utcnow() }
+    snap = {"src" : relative_path_to_snapfile,
+            "createdAt": snaptime }
     snap_id = db.snaps.insert_one(snap)
     print("Inserted snap id  " + str(snap_id))
