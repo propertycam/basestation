@@ -6,7 +6,9 @@ import socket
 import os
 from pymongo import MongoClient
 import datetime
+import json
 
+from basestation.camera import Camera
 
 
 # Create TCP/IP socket
@@ -36,6 +38,13 @@ mongo_client = MongoClient('mongodb://localhost:3001/meteor')
 db = mongo_client.meteor
 #dbs = mongo_client.database_names()
 #print(dbs)
+
+# Initialize camera info in database
+cameras = []
+cameras.append(Camera('001122334455'))
+c = cameras[0]
+db.cameras.insert_one(c.__dict__)
+
 
 # Continuously accept and handle connections
 while True:
