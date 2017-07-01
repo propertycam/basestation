@@ -13,7 +13,7 @@ from basestation.camera import Camera
 
 # Create TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # Bind the socket to a port
 #server_address = ('localhost', 50000)
@@ -42,8 +42,10 @@ db = mongo_client.meteor
 # Initialize camera info in database
 cameras = []
 cameras.append(Camera('001122334455'))
-c = cameras[0]
-db.cameras.insert_one(c.__dict__)
+result = db.cameras.insert_one(cameras[0].__dict__)
+#print("Inserted camera id  " + str(result.inserted_id))
+
+camera = cameras[0]
 
 
 # Continuously accept and handle connections
@@ -54,12 +56,11 @@ while True:
     print('Connection from ', client_addr)
 
     # TODO: Get camera id (could use MAC address) and snap time from camera
-    cam_id = '001122334455'
     snaptime = datetime.datetime.now()
 
     # Create directory to store camera snaps
     date = snaptime.strftime("%Y-%m-%d")
-    snapdir = 'snaps/' + cam_id + '/' + date
+    snapdir = 'snaps/' + camera.macaddress + '/' + date
     fullsnapdir = webpublicdir + '/' + snapdir
     if not os.path.exists(fullsnapdir):
         os.makedirs(fullsnapdir)
@@ -91,8 +92,11 @@ while True:
     file.close()
     connection.close()
 
-    # Insert snap in Mongo db
+    # Insert snap in database
     snap = {"src" : relative_path_to_snapfile,
             "createdAt": snaptime }
-    snap_id = db.snaps.insert_one(snap)
-    print("Inserted snap id  " + str(snap_id))
+    result = db.snaps.insert_one(snap)
+    #print("Inserted snap id  " + str(result.inserted_id))
+
+    # Update cameras last snap
+    db.cameras.update_one({'macaddress': camera.macaddress}, {'$set': {'lastsnap': relative_path_to_snapfile}})
