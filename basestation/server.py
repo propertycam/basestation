@@ -5,6 +5,7 @@ Basestation recieves photos captured by propertycam camera units.
 import socket
 import datetime
 
+from basestation.datastore import DataStore
 from basestation.snap import Snap
 from basestation.snappipeline import SnapPipeline
 
@@ -20,8 +21,15 @@ sock.bind(server_address)
 sock.listen()
 print('Propertycam basestation listening on %s port %s' % server_address)
 
+# TODO: Wait for cameras to connect
+
+# Add connected cameras to datastore
+ds = DataStore()
+camera_mac_address = '001122334455'
+ds.add_camera(camera_mac_address)
+
 # Create snap processing pipeline
-snap_pipeline = SnapPipeline()
+snap_pipeline = SnapPipeline(ds)
 
 # Continuously accept and handle connections
 while True:

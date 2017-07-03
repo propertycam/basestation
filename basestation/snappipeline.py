@@ -8,9 +8,9 @@ from basestation.datastore import DataStore
 
 class SnapPipeline(object):
 
-    def __init__(self):
+    def __init__(self, datastore):
         # Create datastore
-        self.datastore = DataStore()
+        self.datastore = datastore
 
 
     def execute(self, snap):
