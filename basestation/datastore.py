@@ -36,6 +36,11 @@ class DataStore(object):
         file.write(snap.buffer)
         file.close()
 
+        # Copy to last snap file
+        srcfile = fullpathtosnapfile;
+        dstfile = self.rootdir + '/snaps/' + snap.cam_mac_address + '/lastsnap.jpg'
+        shutil.copyfile(srcfile, dstfile)
+
         # Set lastsnap of camera view
         relative_path_to_snapfile = snapdir + '/' + snapfile
         #self.db.cameras.update_one({'macaddress': snap.cam_mac_address}, {'$set': {'lastsnap': relative_path_to_snapfile}}, upsert=True)
