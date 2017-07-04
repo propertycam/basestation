@@ -73,14 +73,5 @@ while True:
     snap = Snap(camera_mac_address, snap_time, snap_buffer)
     snap_pipeline.execute(snap)
 
-    # Insert snap in database
-    # snap = {"src" : relative_path_to_snapfile,
-    #         "createdAt": snaptime }
-    # result = db.snaps.insert_one(snap)
-    # #print("Inserted snap id  " + str(result.inserted_id))
-    #
-    # # Update cameras last snap
-    # db.cameras.update_one({'macaddress': camera.macaddress}, {'$set': {'lastsnap': relative_path_to_snapfile}})
-
 # Wait for http server thread to finish
 httpd_thread.join()
