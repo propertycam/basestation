@@ -4,11 +4,23 @@ Basestation recieves photos captured by propertycam camera units.
 
 import socket
 import datetime
+import socketserver
+import http.server
+import threading
 
 from basestation.datastore import DataStore
 from basestation.snap import Snap
 from basestation.snappipeline import SnapPipeline
 
+# Serve snap images via an HTTP server
+print('Propertycam basestation http file server starting')
+server_address = ('', 8000)
+handler = http.server.SimpleHTTPRequestHandler
+httpd = socketserver.TCPServer(server_address, handler)
+httpd_thread = threading.Thread(target=httpd.serve_forever)
+httpd_thread.setDaemon(True)
+httpd_thread.start()
+print('httpd thread started')
 
 # Create TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,3 +81,6 @@ while True:
     #
     # # Update cameras last snap
     # db.cameras.update_one({'macaddress': camera.macaddress}, {'$set': {'lastsnap': relative_path_to_snapfile}})
+
+# Wait for http server thread to finish
+httpd_thread.join()
