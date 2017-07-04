@@ -3,3 +3,6 @@
 # PyCharm IDE config files
 .idea
 snaps
+
+# Python cache
+__pycache__
