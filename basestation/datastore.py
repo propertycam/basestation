@@ -40,6 +40,9 @@ class DataStore(object):
         url = 'http://localhost:8000/' + snapdir + '/' + snapfile
         self.db.cameras.update_one({'macaddress': snap.cam_mac_address}, {'$set': {'lastsnap': url}}, upsert=True)
 
+        # Store the snap url in the snap
+        snap.url = url
+
     def add_camera(self, camera_mac_address):
         if(self.db.cameras.find_one({"macaddress": camera_mac_address})):
             print("Camera allready in database")
@@ -48,3 +51,8 @@ class DataStore(object):
             cam_json = {"macaddress": camera_mac_address,
                         "lastsnap" : snap_url}
             self.db.cameras.insert_one(cam_json)
+
+    def add_event(self, event):
+        json = {"time": event.time,
+                "snap_url": event.snap_url}
+        self.db.events.insert_one(json)
